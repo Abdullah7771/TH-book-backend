@@ -200,7 +200,13 @@ router.post(
         },
       };
       console.log(data);
-      const authtoken = jwt.sign(data, JWT_SECRET);
+      const authtoken = jwt.sign(
+        {
+          exp: Math.floor(Date.now() / 1000) + 60 * 60,
+          data: data,
+        },
+        JWT_SECRET
+      );
 
       // res.json(user)
       res.json({ authtoken });

@@ -509,7 +509,7 @@ router.post("/add", fetchuser, upload.single("img"), async (req, res) => {
     }
 
     const imgFilename = req.file.originalname;
-    const img = `http://localhost:5000/images/${imgFilename}`;
+    const img = `https://th-backend-kd10.onrender.com/images/${imgFilename}`;
     // const img = {
     //   data: req.file.buffer,
     //   contentType: req.file.mimetype,
