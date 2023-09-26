@@ -1,23 +1,22 @@
-const express = require('express');
-const User = require('../models/User');
+const express = require("express");
+const User = require("../models/User");
 // Subdirectory/file.js
-require('dotenv').config({ path: '../.env' });
+require("dotenv").config({ path: "../.env" });
 
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-var jwt = require('jsonwebtoken');
-var fetchuser = require('../middleware/fetchuser');
+const { body, validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+var jwt = require("jsonwebtoken");
+var fetchuser = require("../middleware/fetchuser");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // ROUTE 1: Create a User using: POST "/api/auth/createuser". No login required
 
-
 // router.post('/add', async (req, res) => {
 //     try {
 //         const { username, fatherName, familyName, address, phoneNumber, email,accountType} = req.body;
-        
+
 //         const errors = validationResult(req);
 //         if (!errors.isEmpty()) {
 //             return res.status(400).json({ errors: errors.array() });
@@ -36,10 +35,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 //     }
 // });
 
-
-
-
-
 /**
  * @swagger
  * tags:
@@ -51,137 +46,182 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 
 
-
 /**
- * @swagger
- * /createuser:
- *   post:
- *     summary: Create a new user
- *     description: Register a new user with the provided information.
- *     tags:
- *       - Authentication
- *     parameters:
- *       - in: body
- *         name: user
- *         description: User registration details
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             username:
- *               type: string
- *               minLength: 3
- *             fatherName:
- *               type: string
- *               minLength: 3
- *             familyName:
- *               type: string
- *               minLength: 3
- *             address:
- *               type: string
- *               minLength: 10
- *             phoneNumber:
- *               type: string
- *               format: mobile-phone
- *             email:
- *               type: string
- *               format: email
- *             password:
- *               type: string
- *               minLength: 5
- *             accountType:
- *               type: string
- *               enum:
- *                 - Admin
- *                 - User
- *     responses:
- *       200:
- *         description: User registered successfully
- *         schema:
- *           type: object
- *           properties:
- *             authtoken:
- *               type: string
- *       400:
- *         description: Bad request or validation error
- *         schema:
- *           type: object
- *           properties:
- *             errors:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   param:
- *                     type: string
- *                   msg:
- *                     type: string
- *       500:
- *         description: Internal Server Error
- */
+* @swagger
+* paths:
+*   /api/auth/createuser:
+*     post:
+*       summary: Creates a new user
+*       tags:
+*         - Authentication
+*       requestBody:
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               required:
+*                 - username
+*                 - fatherName
+*                 - familyName
+*                 - address
+*                 - phoneNumber
+*                 - email
+*                 - password
+*                 - accountType
+*               properties:
+*                 username:
+*                   type: string
+*                   description: The user's username
+*                 fatherName:
+*                   type: string
+*                   description: The user's father's name
+*                 familyName:
+*                   type: string
+*                   description: The user's family name
+*                 address:
+*                   type: string
+*                   description: The user's address
+*                 phoneNumber:
+*                   type: string
+*                   description: The user's phone number
+*                 email:
+*                   type: string
+*                   description: The user's email address
+*                 password:
+*                   type: string
+*                   description: The user's password
+*                 accountType:
+*                   type: string
+*                   enum: [Admin, User]
+*                   description: The user's account type
+*       responses:
+*         '200':
+*           description: The user was created successfully
+*           content:
+*             application/json:
+*               schema:
+*                 type: object
+*                 properties:
+*                   authtoken:
+*                     type: string
+*                     description: The user's authentication token
+*         '400':
+*           description: Bad request
+*           content:
+*             application/json:
+*               schema:
+*                 type: object
+*                 properties:
+*                   errors:
+*                     type: array
+*                     items:
+*                       type: object
+*                       properties:
+*                         param:
+*                           type: string
+*                           description: The parameter that caused the error
+*                         msg:
+*                           type: string
+*                           description: The error message
+*         '500':
+*           description: Internal server error
+*           content:
+*             text/plain:
+*               schema:
+*                 type: string
+*                 example: Internal Server Error
+*/
 
 
-router.post('/createuser', [
-  body('username', 'Enter a valid name').isLength({ min: 3 }),
-  body('fatherName', 'Enter a valid name').isLength({ min: 3 }),
-  body('familyName', 'Enter a valid name').isLength({ min: 3 }),
-  body('address', 'Enter a valid address').isLength({ min: 10 }),
-  body('phoneNumber', 'Enter a valid phone number').isMobilePhone(),
-  body('email', 'Enter a valid email').isEmail(),
-  body('password', 'Password must be atleast 5 characters').isLength({ min: 5 }),
-  body('accountType').isIn(['Admin', 'User']).withMessage('Invalid account type'),
-], async (req, res) => {
-  // If there are errors, return Bad request and the errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  try {
-    // Check whether the user with this email exists already
-    let user = await User.findOne({ email: req.body.email });
-    if (user) {
-      return res.status(400).json({ error: "Sorry a user with this email already exists" })
+
+
+
+router.post(
+  "/createuser",
+  [
+    body("username")
+      .isLength({ min: 3 })
+      .withMessage("Username must be at least 3 characters long"),
+    body("fatherName")
+      .isLength({ min: 3 })
+      .withMessage("Father name must be at least 3 characters long"),
+    body("familyName")
+      .isLength({ min: 3 })
+      .withMessage("Family name must be at least 3 characters long"),
+    body("address")
+      .isLength({ min: 10 })
+      .withMessage("Address must be at least 10 characters long"),
+    body("phoneNumber")
+      .isMobilePhone()
+      .withMessage("Invalid phone number format"),
+    body("email").isEmail().withMessage("Invalid email format"),
+    body("password")
+      .isLength({ min: 5 })
+      .withMessage("Password must be at least 5 characters long"),
+    body("accountType")
+      .isIn(["Admin", "User"])
+      .withMessage("Invalid account type"),
+  ],
+  async (req, res) => {
+    // If there are errors, return Bad request and the errors
+    const errors = validationResult(req);
+    console.log("Request Body:", req.body);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
-    const salt = await bcrypt.genSalt(10);
-    const secPass = await bcrypt.hash(req.body.password, salt);
-    const { username, fatherName, familyName, address, phoneNumber, email,accountType} = req.body;
-    // Create a new user
-    user = await User.create({
-        username, fatherName, familyName, address, phoneNumber, email, accountType, password: secPass,
-        book:null
-    });
-    const data = {
-      user: {
-        id: user.id
+
+    try {
+      // Check whether the user with this email exists already
+      let user = await User.findOne({ email: req.body.email });
+      if (user) {
+        return res
+          .status(400)
+          .json({ error: "Sorry a user with this email already exists" });
       }
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(req.body.password, salt);
+      const {
+        username,
+        fatherName,
+        familyName,
+        address,
+        phoneNumber,
+        email,
+        accountType,
+      } = req.body;
+      // Create a new user
+      user = await User.create({
+        username,
+        fatherName,
+        familyName,
+        address,
+        phoneNumber,
+        email,
+        accountType,
+        password: secPass,
+        book: null,
+      });
+
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      console.log(data);
+      const authtoken = jwt.sign(data, JWT_SECRET);
+
+      // res.json(user)
+      res.json({ authtoken });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
     }
-    console.log(data)
-    const authtoken = jwt.sign(data, JWT_SECRET);
-
-
-    // res.json(user)
-    res.json({ authtoken })
-
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send("Internal Server Error");
   }
-})
-
-
-
-
-
-
-
-
-
-
-
+);
 
 /**
  * @swagger
- * /login:
+ * /api/auth/login:
  *   post:
  *     summary: User login
  *     tags:
@@ -237,61 +277,59 @@ router.post('/createuser', [
  *               description: Error message in case of a server error
  */
 
-
 // ROUTE 2: Authenticate a User using: POST "/api/auth/login". No login required
-router.post('/login', [
-  body('email', 'Enter a valid email').isEmail(),
-  body('password', 'Password cannot be blank').exists(),
-], async (req, res) => {
-  let success = false;
-  // If there are errors, return Bad request and the errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const { email, password } = req.body;
-  try {
-    let user = await User.findOne({ email });
-    if (!user) {
-      success = false
-      return res.status(400).json({ error: "Please try to login with correct credentials" });
+router.post(
+  "/login",
+  [
+    body("email", "Enter a valid email").isEmail(),
+    body("password", "Password cannot be blank").exists(),
+  ],
+  async (req, res) => {
+    let success = false;
+    // If there are errors, return Bad request and the errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    const passwordCompare = await bcrypt.compare(password, user.password);
-    if (!passwordCompare) {
-      success = false
-      return res.status(400).json({ success, error: "Please try to login with correct credentials" });
-    }
-
-    const data = {
-      user: {
-        id: user.id
+    const { email, password } = req.body;
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        success = false;
+        return res
+          .status(400)
+          .json({ error: "Please try to login with correct credentials" });
       }
+
+      const passwordCompare = await bcrypt.compare(password, user.password);
+      if (!passwordCompare) {
+        success = false;
+        return res.status(400).json({
+          success,
+          error: "Please try to login with correct credentials",
+        });
+      }
+
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      console.log(data);
+      const authtoken = jwt.sign(data, JWT_SECRET);
+      success = true;
+      res.json({ success, authtoken });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
     }
-    console.log(data);
-    const authtoken = jwt.sign(data, JWT_SECRET);
-    success = true;
-    res.json({ success, authtoken })
-
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send("Internal Server Error");
   }
-
-
-});
-
-
-
-
-
-
-
+);
 
 /**
  * @swagger
- * /getuser:
+ * /api/auth/getuser:
  *   post:
  *     summary: Get user information
  *     description: Retrieve user information based on the authenticated user's token.
@@ -329,18 +367,16 @@ router.post('/login', [
  */
 
 // ROUTE 3: Get loggedin User Details using: POST "/api/auth/getuser". Login required
-router.post('/getuser', fetchuser,  async (req, res) => {
-
+router.post("/getuser", fetchuser, async (req, res) => {
   try {
-    const  userId = req.user.id;
-    console.log(userId)
-    const user = await User.findById(userId).select("-password")
-    res.send(user)
+    const userId = req.user.id;
+    console.log(userId);
+    const user = await User.findById(userId).select("-password");
+    res.send(user);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
-})
+});
 
-
-module.exports = router
+module.exports = router;
