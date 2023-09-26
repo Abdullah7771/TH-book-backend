@@ -15,13 +15,18 @@ app.use(express.json());
 app.use(express.static("public"));
 // Available Routes
 // One Route for each (Player, Team, Round)
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', require('./auth/auth'))
 app.use("/api/books", require("./routes/book"));
 app.use("/api/users", require("./routes/user"));
 app.use("/api/subjects", require("./routes/subject"));
 app.use("/api/classes", require("./routes/class"));
+
+app.get('/', (req, res) => {
+  res.send('Backend application');
+});
+
 
 // Serve static assets if in production
 // if (process.env.NODE_ENV === "production") {
