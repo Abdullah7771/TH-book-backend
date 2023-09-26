@@ -42,99 +42,89 @@ const JWT_SECRET = process.env.JWT_SECRET;
  *   description: Authentication-related endpoints
  */
 
-
-
-
-
 /**
-* @swagger
-* paths:
-*   /api/auth/createuser:
-*     post:
-*       summary: Creates a new user
-*       tags:
-*         - Authentication
-*       requestBody:
-*         content:
-*           application/json:
-*             schema:
-*               type: object
-*               required:
-*                 - username
-*                 - fatherName
-*                 - familyName
-*                 - address
-*                 - phoneNumber
-*                 - email
-*                 - password
-*                 - accountType
-*               properties:
-*                 username:
-*                   type: string
-*                   description: The user's username
-*                 fatherName:
-*                   type: string
-*                   description: The user's father's name
-*                 familyName:
-*                   type: string
-*                   description: The user's family name
-*                 address:
-*                   type: string
-*                   description: The user's address
-*                 phoneNumber:
-*                   type: string
-*                   description: The user's phone number
-*                 email:
-*                   type: string
-*                   description: The user's email address
-*                 password:
-*                   type: string
-*                   description: The user's password
-*                 accountType:
-*                   type: string
-*                   enum: [Admin, User]
-*                   description: The user's account type
-*       responses:
-*         '200':
-*           description: The user was created successfully
-*           content:
-*             application/json:
-*               schema:
-*                 type: object
-*                 properties:
-*                   authtoken:
-*                     type: string
-*                     description: The user's authentication token
-*         '400':
-*           description: Bad request
-*           content:
-*             application/json:
-*               schema:
-*                 type: object
-*                 properties:
-*                   errors:
-*                     type: array
-*                     items:
-*                       type: object
-*                       properties:
-*                         param:
-*                           type: string
-*                           description: The parameter that caused the error
-*                         msg:
-*                           type: string
-*                           description: The error message
-*         '500':
-*           description: Internal server error
-*           content:
-*             text/plain:
-*               schema:
-*                 type: string
-*                 example: Internal Server Error
-*/
-
-
-
-
+ * @swagger
+ * paths:
+ *   /api/auth/createuser:
+ *     post:
+ *       summary: Creates a new user
+ *       requestBody:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                 - username
+ *                 - fatherName
+ *                 - familyName
+ *                 - address
+ *                 - phoneNumber
+ *                 - email
+ *                 - password
+ *                 - accountType
+ *               properties:
+ *                 username:
+ *                   type: string
+ *                   description: The user's username
+ *                 fatherName:
+ *                   type: string
+ *                   description: The user's father's name
+ *                 familyName:
+ *                   type: string
+ *                   description: The user's family name
+ *                 address:
+ *                   type: string
+ *                   description: The user's address
+ *                 phoneNumber:
+ *                   type: string
+ *                   description: The user's phone number
+ *                 email:
+ *                   type: string
+ *                   description: The user's email address
+ *                 password:
+ *                   type: string
+ *                   description: The user's password
+ *                 accountType:
+ *                   type: string
+ *                   enum: [Admin, User]
+ *                   description: The user's account type
+ *       responses:
+ *         '200':
+ *           description: The user was created successfully
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   authtoken:
+ *                     type: string
+ *                     description: The user's authentication token
+ *         '400':
+ *           description: Bad request
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: object
+ *                 properties:
+ *                   errors:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         param:
+ *                           type: string
+ *                           description: The parameter that caused the error
+ *                         msg:
+ *                           type: string
+ *                           description: The error message
+ *         '500':
+ *           description: Internal server error
+ *           content:
+ *             text/plain:
+ *               schema:
+ *                 type: string
+ *                 example: Internal Server Error
+ */
 
 router.post(
   "/createuser",

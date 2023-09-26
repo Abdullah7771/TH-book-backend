@@ -10,7 +10,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:5000", // Update with your API's base URL
+        url: "https://th-backend-kd10.onrender.com/", // Update with your API's base URL
       },
     ],
   },
