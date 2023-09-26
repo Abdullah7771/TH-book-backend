@@ -333,8 +333,15 @@ router.post(
  *     description: Retrieve user information based on the authenticated user's token.
  *     tags:
  *       - Authentication
+ *     parameters:
+ *         - in: header
+ *           name: auth-token
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: An authentication token to access the API.
  *     security:
- *       - BearerAuth: []
+ *         - auth-token: []
  *     responses:
  *       200:
  *         description: Successful user information retrieval
