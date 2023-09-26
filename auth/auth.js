@@ -47,6 +47,8 @@ const JWT_SECRET = process.env.JWT_SECRET;
  * paths:
  *   /api/auth/createuser:
  *     post:
+ *       tags:
+ *         - Authentication
  *       summary: Creates a new user
  *       requestBody:
  *         content:

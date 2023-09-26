@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static("public"));
 // Available Routes
 // One Route for each (Player, Team, Round)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/auth', require('./auth/auth'))
 app.use("/api/books", require("./routes/book"));
