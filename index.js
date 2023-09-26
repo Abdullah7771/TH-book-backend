@@ -24,7 +24,7 @@ app.use("/api/subjects", require("./routes/subject"));
 app.use("/api/classes", require("./routes/class"));
 
 app.get('/', (req, res) => {
-  res.send('Backend application');
+  res.send('Backend application of Talent Hunters Book Portal,\nGo to /api-docs for accessing all routes');
 });
 
 
