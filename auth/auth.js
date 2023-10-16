@@ -200,16 +200,10 @@ router.post(
         },
       };
       console.log(data);
-      const authtoken = jwt.sign(
-        {
-          exp: Math.floor(Date.now() / 1000) + 60 * 60,
-          data: data,
-        },
-        JWT_SECRET
-      );
+      
 
-      // res.json(user)
-      res.json({ authtoken });
+       res.json(user)
+      
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal Server Error");
@@ -315,7 +309,14 @@ router.post(
         },
       };
       console.log(data);
-      const authtoken = jwt.sign(data, JWT_SECRET);
+      const authtoken = jwt.sign(
+        {
+          exp: Math.floor(Date.now() / 1000) + 60 * 60,
+          data: data,
+        },
+        JWT_SECRET
+      );
+      // const authtoken = jwt.sign(data, JWT_SECRET);
       success = true;
       res.json({ success, authtoken });
     } catch (error) {
