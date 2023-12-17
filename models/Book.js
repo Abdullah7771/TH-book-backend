@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
-//Schema or model created for Player (Works as Table in SQL)
 const BooksSchema = new Schema({
     name:{
         type: String,

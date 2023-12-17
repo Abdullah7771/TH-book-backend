@@ -48,7 +48,7 @@ var mongodb = require('mongodb');
  */
 
 
-// ROUTE 1: Get All the users using: GET "/api/team/fetchall"
+
 router.get('/fetchall',fetchuser, async (req, res) => {
     try {
         const users = await User.find();
@@ -91,7 +91,6 @@ router.get('/fetchall',fetchuser, async (req, res) => {
  *                   $ref: '#/components/schemas/Users'
  */
 
-// ROUTE 2: Get All the users from specific team using teamid using: GET "/api/team/users/:teamid"
 router.get('/admin',fetchuser, async (req, res) => {
     try {
         const users = await User.find({accountType : 'Admin'},);
@@ -303,18 +302,7 @@ router.get('/familyname/',fetchuser, async (req, res) => {
 
 
 
-// ROUTE 3: Get All the images of all users using :  GET "/api/team/images"
-// router.get('/images', async (req, res) => {
-//     try {
-//         //img : 1 ,name :1 means field we want and _id :0 means field we donot want
-//         const users = await  User.aggregate([{$project : {img:1,name:1,_id:0}}]);
-       
-//         res.json(users)
-//     } catch (error) {
-//         console.error(error.message);
-//         res.status(500).send("Internal Server Error");
-//     }
-// })
+
 
 
 
@@ -622,18 +610,6 @@ router.put('/deleteall',fetchuser, async (req, res) => {
 })
 
 
-// router.put('/undopick/:id', async (req, res) => {
-//     try {
-//         //empty all users array from all users 
-      
-//         const users = await  User.updateOne({teamid:req.params.id},{ $pop: { users:1} });
-//        const resteam= await User.findOne({teamid:req.params.id});
-//         res.json(resteam)
-//     } catch (error) {
-//         console.error(error.message);
-//         res.status(500).send("Internal Server Error");
-//     }
-// })
 
 
 

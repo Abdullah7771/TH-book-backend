@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-//Schema or model created for Team (Works as Table in SQL)
 const ClassSchema = new Schema({
     grade:{
         type: String,

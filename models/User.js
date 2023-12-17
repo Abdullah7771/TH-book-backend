@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-//Schema or model created for Round (Works as Table in SQL)
 const UserSchema = new Schema({
   username: {
     type: String,
@@ -39,7 +38,7 @@ const UserSchema = new Schema({
     {
       bookid: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'books', // Reference to your 'Book' model
+        ref: 'books', 
         required: true,
       }
     }
@@ -47,6 +46,5 @@ const UserSchema = new Schema({
     
 });
 
-//first argument must be same of that  existing collection of database which you want
-// otherwise new collection created
+
 module.exports = mongoose.model("users", UserSchema);

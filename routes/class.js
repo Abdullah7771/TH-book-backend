@@ -8,7 +8,6 @@ var mongodb = require('mongodb');
 
 
 
-// ROUTE 1: Get All the books using: GET "/api/books/fetchall"
 router.get('/fetchall', async (req, res) => {
     try {
         
@@ -21,7 +20,6 @@ router.get('/fetchall', async (req, res) => {
 })
 
 
-// ROUTE 1: Get the grade using number as params  : GET "/api/books/:grade"
 router.get('/:grade', async (req, res) => {
     try {
         let books = await Class.find({grade : req.params.grade});

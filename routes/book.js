@@ -214,7 +214,7 @@ router.get("/:id", fetchuser, async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json({ book });
+    res.json( book );
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -275,7 +275,7 @@ router.get("/fetch/bookname", fetchuser, async (req, res) => {
        return res.status(404).send("Not Found");
      }
     
-     res.json({ book });
+     res.json( book );
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -340,7 +340,7 @@ router.get("/fetch/author", fetchuser, async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json({ book });
+    res.json( book );
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -369,7 +369,7 @@ router.get("/fetch/author", fetchuser, async (req, res) => {
  *           content:
  *             application/json:
  *               schema:
- *                 type: array
+ *                 $ref: '#/components/schemas/Book'
  *                 items:
  *                   $ref: '#/components/schemas/Book'
  *       parameters:
@@ -388,7 +388,7 @@ router.get("/available/fetch", fetchuser, async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json({ book });
+    res.json( book );
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -404,7 +404,7 @@ router.get("/available/fetch", fetchuser, async (req, res) => {
 //         //find that book whose type is equal to category sent in params e.g bowler,batsman etc
 //         let book = await Book.find({ type: req.params.category });
 //         if (!book) { return res.status(404).send("Not Found") }
-//         res.json({ book });
+//         res.json( book );
 //     } catch (error) {
 //         console.error(error.message);
 //         res.status(500).send("Internal Server Error");
@@ -649,7 +649,7 @@ router.put("/update/:id", fetchuser, upload.single("img"), async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json({ book });
+    res.json( book );
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
