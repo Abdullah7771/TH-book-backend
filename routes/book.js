@@ -13,16 +13,12 @@ const { body, validationResult } = require("express-validator");
 var mongodb = require("mongodb");
 const User = require("../models/User");
 
-
-
 /**
  * @swagger
  * tags:
  *   name: Books
  *   description: Book-related endpoints
  */
-
-
 
 /**
  * @swagger
@@ -53,8 +49,6 @@ const User = require("../models/User");
  *           description: An authentication token to access the API.
  */
 
-
-
 router.get("/fetchall", fetchuser, async (req, res) => {
   try {
     const books = await Book.find();
@@ -65,11 +59,60 @@ router.get("/fetchall", fetchuser, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * paths:
+ *   /api/books/pagination:
+ *     get:
+ *       summary: Get all books with pagination.
+ *       tags:
+ *         - Books
+ *       description: Returns a list of books with pagination support.
+ *       security:
+ *         - auth-token: []
+ *       parameters:
+ *         - in: header
+ *           name: auth-token
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: An authentication token to access the API.
+ *         - in: query
+ *           name: page
+ *           schema:
+ *             type: integer
+ *           required: false
+ *           description: The page number for pagination. Default is 1.
+ *       responses:
+ *         '200':
+ *           description: A list of books.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Book'
+ */
 
+const ITEMS_PER_PAGE = 10;
 
+router.get("/pagination", fetchuser, async (req, res) => {
+  try {
+    // Get the page number from the query parameters, defaulting to 1 if not provided
+    const page = parseInt(req.query.page) || 1;
 
+    // Calculate the skip value based on the page number
+    const skip = (page - 1) * ITEMS_PER_PAGE;
 
+    // Fetch the books with pagination
+    const books = await Book.find().skip(skip).limit(ITEMS_PER_PAGE);
 
+    res.json(books);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 /**
  * @swagger
@@ -105,22 +148,91 @@ router.get("/fetchall", fetchuser, async (req, res) => {
  */
 
 router.get("/class/", async (req, res) => {
-    try {
-      const {grade}=req.query;
-      const books = await Book.find({grade:grade});
-      res.json(books);
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).send("Internal Server Error");
+  try {
+    const { grade } = req.query;
+    const books = await Book.find({ grade: grade });
+    res.json(books);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+/**
+ * @swagger
+ * paths:
+ *   /api/books/queryall/:
+ *     get:
+ *       summary: Get books by grade/class.
+ *       tags: [Books]
+ *       parameters:
+ *         - in: query
+ *           name: grade
+ *           required: false
+ *           description: Class of the book to retrieve.
+ *           schema:
+ *             type: string
+ *         - in: query
+ *           name: subject
+ *           required: false
+ *           description: Subject of the book to retrieve.
+ *           schema:
+ *             type: string
+ *         - in: query
+ *           name: name
+ *           required: false
+ *           description: Title of the book to retrieve(Search input).
+ *           schema:
+ *             type: string
+ *         - in: query
+ *           name: status
+ *           required: false
+ *           description: Status of the book to retrieve.
+ *           schema:
+ *             type: string
+ *         - in: header
+ *           name: auth-token
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: An authentication token to access the API.
+ *       security:
+ *         - auth-token: []
+ *       responses:
+ *         '200':
+ *           description: A book object.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 $ref: '#/components/schemas/Book'
+ *         '404':
+ *           description: Book not found.
+ */
+
+router.get("/queryall/", async (req, res) => {
+  try {
+    const { grade, subject, status, name } = req.query;
+
+    // Construct the query object based on the provided parameters
+    const query = {};
+    if (grade) query.grade = grade;
+    if (subject) query.subject = subject;
+    if (name) {
+      // Use a regular expression for partial matching of the name
+      query.name = { $regex: new RegExp(name, "i") }; // 'i' for case-insensitive matching
     }
-  });
+    if (status) query.status = status;
+    else query.status = "available"; // Default value if status is not provided
 
+    // Fetch books based on the constructed query
+    const books = await Book.find(query);
 
-
-
-
-
-
+    res.json(books);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 /**
  * @swagger
@@ -157,8 +269,8 @@ router.get("/class/", async (req, res) => {
 
 router.get("/subject/", async (req, res) => {
   try {
-    const {name}=req.query
-    const books = await Book.find({subject:name});
+    const { name } = req.query;
+    const books = await Book.find({ subject: name });
     res.json(books);
   } catch (error) {
     console.error(error.message);
@@ -166,12 +278,7 @@ router.get("/subject/", async (req, res) => {
   }
 });
 
-
-
-
 // ROUTE 2: Get All the books using id as params using: GET "/api/book/:id"
-
-
 
 /**
  * @swagger
@@ -214,18 +321,12 @@ router.get("/:id", fetchuser, async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json( book );
+    res.json(book);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
-
 
 /**
  * @swagger
@@ -261,39 +362,23 @@ router.get("/:id", fetchuser, async (req, res) => {
  *           description: Book not found.
  */
 
-
-
-
 router.get("/fetch/bookname", fetchuser, async (req, res) => {
   // const { playerid } = req.params.id;
   try {
     const { name } = req.query;
     //find that book whose id is equal to id sent in params
-     let book = await Book.find({ name: name });
+    let book = await Book.find({ name: name });
     console.log("jads");
-     if (!book) {
-       return res.status(404).send("Not Found");
-     }
-    
-     res.json( book );
+    if (!book) {
+      return res.status(404).send("Not Found");
+    }
+
+    res.json(book);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * @swagger
@@ -328,29 +413,21 @@ router.get("/fetch/bookname", fetchuser, async (req, res) => {
  *           description: Book not found.
  */
 
-
-
-
 router.get("/fetch/author", fetchuser, async (req, res) => {
   // const { playerid } = req.params.id;
-  const {name} = req.query;
+  const { name } = req.query;
   try {
     //find that book whose id is equal to id sent in params
     let book = await Book.find({ author: name });
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json( book );
+    res.json(book);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
 
 /**
  * @swagger
@@ -388,14 +465,12 @@ router.get("/available/fetch", fetchuser, async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json( book );
+    res.json(book);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
   }
 });
-
-
 
 // ROUTE 3: Get All the books sort by category using params by : GET "/api/book/type/:category"
 // router.get('/type/:category', async (req, res) => {
@@ -425,17 +500,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-
-
-
-
-
-
-
-
 // ROUTE 5: Add a new Book using: POST "/api/book/add"
-
-
 
 /**
  * @swagger
@@ -496,9 +561,6 @@ const upload = multer({ storage: storage });
  *           description: Internal Server Error.
  */
 
-
-
-
 router.post("/add", fetchuser, upload.single("img"), async (req, res) => {
   try {
     const { name, subject, status, grade, count, author } = req.body;
@@ -536,7 +598,6 @@ router.post("/add", fetchuser, upload.single("img"), async (req, res) => {
 });
 
 // ROUTE 6: Update an existing Book using: PUT "/api/book/update"
-
 
 /**
  * @swagger
@@ -601,10 +662,6 @@ router.post("/add", fetchuser, upload.single("img"), async (req, res) => {
  *           description: Internal Server Error.
  */
 
-
-
-
-
 router.put("/update/:id", fetchuser, upload.single("img"), async (req, res) => {
   //Post in obj body
   const { name, subject, status, grade, count, author } = req.body;
@@ -649,7 +706,7 @@ router.put("/update/:id", fetchuser, upload.single("img"), async (req, res) => {
     if (!book) {
       return res.status(404).send("Not Found");
     }
-    res.json( book );
+    res.json(book);
   } catch (error) {
     console.error(error.message);
     res.status(500).send("Internal Server Error");
@@ -657,7 +714,6 @@ router.put("/update/:id", fetchuser, upload.single("img"), async (req, res) => {
 });
 
 // // ROUTE 7: Delete an existing Book using id  using: DELETE "/api/book/delete/:id". Login required
-
 
 /**
  * @swagger
@@ -710,10 +766,6 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
 
 /**
  * @swagger
@@ -776,8 +828,6 @@ router.delete("/delete/:id", fetchuser, async (req, res) => {
  *           description: Internal Server Error.
  */
 
-
-
 router.post("/soldout/add", fetchuser, async (req, res) => {
   try {
     const { userid, bookid } = req.body;
@@ -810,15 +860,6 @@ router.post("/soldout/add", fetchuser, async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
 /**
  * @swagger
  * paths:
@@ -848,9 +889,6 @@ router.post("/soldout/add", fetchuser, async (req, res) => {
  *           description: An authentication token to access the API.
  */
 
-
-
-
 router.get("/soldout/fetch", fetchuser, async (req, res) => {
   try {
     const soldoutbooks = await SoldOutBooks.find()
@@ -863,10 +901,6 @@ router.get("/soldout/fetch", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
 
 /**
  * @swagger
@@ -937,8 +971,6 @@ router.get("/soldout/fetch", fetchuser, async (req, res) => {
  *           description: Internal Server Error.
  */
 
-
-
 router.post("/reqbook/send", fetchuser, async (req, res) => {
   try {
     const { userid, bookname, grade, subject } = req.body;
@@ -961,13 +993,11 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
     if (user) {
       console.log("Req sent for a book");
       // Respond with a success message or updated user data
-      res
-        .status(200)
-        .json({
-          message: "Req sent for soldoutbook",
-          bookname: bookname,
-          grade: grade,
-        });
+      res.status(200).json({
+        message: "Req sent for soldoutbook",
+        bookname: bookname,
+        grade: grade,
+      });
     } else {
       console.log("User not found");
       // Respond with an error message indicating the user was not found
@@ -978,11 +1008,6 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
 
 /**
  * @swagger
@@ -1023,11 +1048,6 @@ router.get("/reqbook/fetch", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
 
 /**
  * @swagger
@@ -1098,10 +1118,6 @@ router.get("/reqbook/fetch", fetchuser, async (req, res) => {
  *           description: Internal Server Error.
  */
 
-
-
-
-
 router.post("/donatebook/send", fetchuser, async (req, res) => {
   try {
     const { userid, bookname, grade, subject } = req.body;
@@ -1124,13 +1140,11 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
     if (user) {
       console.log("Req sent for a book");
       // Respond with a success message or updated user data
-      res
-        .status(200)
-        .json({
-          message: "Req sent for soldoutbook",
-          bookname: bookname,
-          grade: grade,
-        });
+      res.status(200).json({
+        message: "Req sent for soldoutbook",
+        bookname: bookname,
+        grade: grade,
+      });
     } else {
       console.log("User not found");
       // Respond with an error message indicating the user was not found
@@ -1141,11 +1155,6 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
-
-
-
-
 
 /**
  * @swagger
@@ -1187,74 +1196,54 @@ router.get("/donatebook/fetch", fetchuser, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Book:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *         subject:
+ *           type: string
+ *         status:
+ *           type: string
+ *         grade:
+ *           type: string
+ *         count:
+ *           type: integer
+ *         author:
+ *           type: string
+ *     SoldOutBook:
+ *       type: object
+ *       properties:
+ *         userid:
+ *           type: string
+ *         bookid:
+ *           type: string
+ *     RequestedBook:
+ *       type: object
+ *       properties:
+ *         userid:
+ *           type: string
+ *         bookname:
+ *           type: string
+ *         grade:
+ *           type: string
+ *         subject:
+ *           type: string
+ *     DonateBook:
+ *       type: object
+ *       properties:
+ *         userid:
+ *           type: string
+ *         bookname:
+ *           type: string
+ *         grade:
+ *           type: string
+ *         subject:
+ *           type: string
+ */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /**
-   * @swagger
-   * components:
-   *   schemas:
-   *     Book:
-   *       type: object
-   *       properties:
-   *         name:
-   *           type: string
-   *         subject:
-   *           type: string
-   *         status:
-   *           type: string
-   *         grade:
-   *           type: string
-   *         count:
-   *           type: integer
-   *         author:
-   *           type: string
-   *     SoldOutBook:
-   *       type: object
-   *       properties:
-   *         userid:
-   *           type: string
-   *         bookid:
-   *           type: string
-   *     RequestedBook:
-   *       type: object
-   *       properties:
-   *         userid:
-   *           type: string
-   *         bookname:
-   *           type: string
-   *         grade:
-   *           type: string
-   *         subject:
-   *           type: string
-   *     DonateBook:
-   *       type: object
-   *       properties:
-   *         userid:
-   *           type: string
-   *         bookname:
-   *           type: string
-   *         grade:
-   *           type: string
-   *         subject:
-   *           type: string
-   */
-  
 module.exports = router;
