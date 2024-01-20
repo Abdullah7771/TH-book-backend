@@ -43,6 +43,10 @@ const UserSchema = new Schema({
       }
     }
   ]
+  ,
+  donatebooks: []
+  ,
+  requestedbooks: []
     
 });
 

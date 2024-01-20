@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Book = require('../models/Book');
 const OrderedBooks=require('../models/OrderedBooks');
 const fetchuser=require("../middleware/fetchuser")
 const { body, validationResult } = require('express-validator');
@@ -239,8 +240,27 @@ router.get('/name/',fetchuser, async (req, res) => {
 router.get('/:id',fetchuser, async (req, res) => {
     try {
         
-        const users = await User.find({_id : req.params.id}).populate('books');
-        res.json(users)
+        const user = await User.findById({ _id: req.params.id }).populate('books');
+     const books=[];
+        // Access book details through the populated 'books' field
+        const booksDetails = await Promise.all(user.books.map(async (book) => {
+            const id= book.bookid
+          const bookDetail = await Book.findById(id);
+          console.log(book.bookid,bookDetail)
+          books.push(bookDetail)
+          return books
+        }));
+        
+        // console.log(booksDetails);
+        const username=user.username
+        const id=user.id
+        const obj={
+            username,
+            id
+            
+        }
+        
+        res.json({ obj, books });
     } catch (error) {
         console.error(error.message);
         res.status(500).send("Internal Server Error");

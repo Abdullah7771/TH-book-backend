@@ -2,20 +2,15 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const BooksSchema = new Schema({
-    userid:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users', // Reference to your 'Book' model
+    quantity:{
+        type: Number,   
         required: true,
     },
-    bookname:{
+    contact:{
         type: String,   
         required: true,
     },
-    subject:{
-        type: String,   
-        required: true,
-    },
-    grade:{
+    location:{
         type:String,
         required: true,
     }

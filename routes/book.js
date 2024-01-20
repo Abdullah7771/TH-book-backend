@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require('mongoose');
 const router = express.Router();
 const Book = require("../models/Book");
 const SoldOutBooks = require("../models/SoldOutBooks");
@@ -313,11 +314,13 @@ router.get("/subject/", async (req, res) => {
  *           description: Book not found.
  */
 router.get("/:id", fetchuser, async (req, res) => {
-  // const { playerid } = req.params.id;
 
   try {
     //find that book whose id is equal to id sent in params
-    let book = await Book.findOne({ id: req.params.id });
+   const {id}=req.params
+    console.log("params:" +id)
+   
+    let book = await Book.findById(id);
     if (!book) {
       return res.status(404).send("Not Found");
     }
@@ -1074,11 +1077,11 @@ router.get("/reqbook/fetch", fetchuser, async (req, res) => {
  *               properties:
  *                 userid:
  *                   type: string
- *                 bookname:
+ *                 quantity:
+ *                   type: number
+ *                 contact:
  *                   type: string
- *                 grade:
- *                   type: string
- *                 subject:
+ *                 location:
  *                   type: string
  *       responses:
  *         '200':
@@ -1120,7 +1123,7 @@ router.get("/reqbook/fetch", fetchuser, async (req, res) => {
 
 router.post("/donatebook/send", fetchuser, async (req, res) => {
   try {
-    const { userid, bookname, grade, subject } = req.body;
+    const { userid, quantity, contact, location } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -1129,21 +1132,34 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
 
     const user = User.find({ id: userid });
 
-    const reqBook = {
+    const donatedBook = {
       userid,
-      bookname,
-      grade,
-      subject,
+      quantity,
+      contact,
+      location,
     };
-    const reqBooks = await DonateBooks.create(reqBook);
+    const reqBooks = await DonateBooks.create(donatedBook);
 
     if (user) {
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: userid },
+        {
+          $push: {
+            donatebooks: {
+              quantity,
+              contact,
+              location,
+            
+            }
+          }
+        },
+        { new: true }
+    );
       console.log("Req sent for a book");
       // Respond with a success message or updated user data
       res.status(200).json({
-        message: "Req sent for soldoutbook",
-        bookname: bookname,
-        grade: grade,
+        message: "Donation sent ",
+        donatedBook
       });
     } else {
       console.log("User not found");
@@ -1155,6 +1171,77 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+
+/**
+ * @swagger
+ * paths:
+ *   /api/books/donatebook/user/{id}:
+ *     get:
+ *       summary: Get  donated books of individual user.
+ *       tags:
+ *         - DonateBooks
+ *       description: Returns a list of all donated books by a particular user.
+ *       security:
+ *         - auth-token: []
+ *       responses:
+ *         '200':
+ *           description: A list of books.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Book'
+ *       parameters:
+ *         - in: header
+ *           name: auth-token
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: An authentication token to access the API.
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: Id of the user
+ * 
+ */
+
+router.get('/donatebook/user/:id',fetchuser, async (req, res) => {
+  try {
+      
+      // const user = await User.findById({ _id: req.params.id }).populate('donatebooks');
+      const user = await User.findById({ _id: req.params.id }, 'username donatebooks');
+      
+      console.log(user)
+   const books=[];
+      // Access book details through the populated 'books' field
+      // const booksDetails = await Promise.all(user.donatebooks.map(async (book) => {
+      //     const id= book.bookid
+      //   const bookDetail = await DonateBooks.findById(id);
+      //   console.log(book.bookid,bookDetail)
+      //   books.push(bookDetail)
+      //   return books
+      // }));
+      
+      // // console.log(booksDetails);
+      // const username=user.username
+      // const id=user.id
+      // const obj={
+      //     username,
+      //     id
+          
+      // }
+      
+      
+      res.json( user );
+  } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
+  }
+})
 
 /**
  * @swagger
