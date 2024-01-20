@@ -2,18 +2,14 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
   const BooksSchema = new Schema({
-    userid:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users', 
-        required: true,
-    },
+
     bookname:{
         type: String,
         required: true
     },
     subject:{
         type: String,
-        required:false
+        required:true
     },
     // subject:{
     //     type: mongoose.Schema.Types.ObjectId,
@@ -33,7 +29,7 @@ const { Schema } = mongoose;
     //     ref:'Class',
     //     required:false
     // },
-    count:{
+    quantity:{
         type: Number,
         required: true
     },
@@ -41,6 +37,10 @@ const { Schema } = mongoose;
         type: String,
         required: false
     },
+    description:{
+        type:String,
+        required:false
+    }
    
   });
 

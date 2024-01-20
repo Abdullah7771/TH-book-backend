@@ -936,6 +936,14 @@ router.get("/soldout/fetch", fetchuser, async (req, res) => {
  *                   type: string
  *                 subject:
  *                   type: string
+ *                 author:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 quantity:
+ *                   type: number
+ *                 description:
+ *                   type: string
  *       responses:
  *         '200':
  *           description: Book request sent successfully.
@@ -976,7 +984,7 @@ router.get("/soldout/fetch", fetchuser, async (req, res) => {
 
 router.post("/reqbook/send", fetchuser, async (req, res) => {
   try {
-    const { userid, bookname, grade, subject } = req.body;
+    const { userid, bookname, status, subject,grade,quantity,author,description } = req.body;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -986,20 +994,29 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
     const user = User.find({ id: userid });
 
     const reqBook = {
-      userid,
-      bookname,
-      grade,
-      subject,
+      userid, bookname, status, subject,grade,quantity,author,description
     };
-    const reqBooks = await RequestedBooks.create(reqBook);
-
+    
     if (user) {
+      const reqBooks = await RequestedBooks.create(reqBook);
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: userid },
+        {
+          $push: {
+            requestedbooks: {
+              bookname, status, subject,grade,quantity,author,description
+            
+            }
+          }
+        },
+        { new: true }
+      );
       console.log("Req sent for a book");
       // Respond with a success message or updated user data
       res.status(200).json({
         message: "Req sent for soldoutbook",
-        bookname: bookname,
-        grade: grade,
+         username:user.id,
+         reqBook
       });
     } else {
       console.log("User not found");
@@ -1011,6 +1028,78 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+
+/**
+ * @swagger
+ * paths:
+ *   /api/books/reqbooks/user/{id}:
+ *     get:
+ *       summary: Get  requested books of individual user.
+ *       tags:
+ *         - RequestBooks
+ *       description: Returns a list of all requested books by a particular user.
+ *       security:
+ *         - auth-token: []
+ *       responses:
+ *         '200':
+ *           description: A list of books.
+ *           content:
+ *             application/json:
+ *               schema:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Book'
+ *       parameters:
+ *         - in: header
+ *           name: auth-token
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: An authentication token to access the API.
+ *         - in: path
+ *           name: id
+ *           schema:
+ *             type: string
+ *           required: true
+ *           description: Id of the user
+ * 
+ */
+
+router.get('/reqbooks/user/:id',fetchuser, async (req, res) => {
+  try {
+      
+      // const user = await User.findById({ _id: req.params.id }).populate('donatebooks');
+      const user = await User.findById({ _id: req.params.id }, 'username requestedbooks');
+      
+      console.log(user)
+   const books=[];
+      // Access book details through the populated 'books' field
+      // const booksDetails = await Promise.all(user.donatebooks.map(async (book) => {
+      //     const id= book.bookid
+      //   const bookDetail = await DonateBooks.findById(id);
+      //   console.log(book.bookid,bookDetail)
+      //   books.push(bookDetail)
+      //   return books
+      // }));
+      
+      // // console.log(booksDetails);
+      // const username=user.username
+      // const id=user.id
+      // const obj={
+      //     username,
+      //     id
+          
+      // }
+      
+      
+      res.json( user );
+  } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
+  }
+})
+
 
 /**
  * @swagger
@@ -1138,9 +1227,9 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
       contact,
       location,
     };
-    const reqBooks = await DonateBooks.create(donatedBook);
-
+    
     if (user) {
+      const reqBooks = await DonateBooks.create(donatedBook);
       const updatedUser = await User.findOneAndUpdate(
         { _id: userid },
         {
