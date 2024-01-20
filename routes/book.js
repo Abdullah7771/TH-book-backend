@@ -992,9 +992,10 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
     }
 
     const user = User.find({ id: userid });
-
+    const date=new Date();
+    console.log(date)
     const reqBook = {
-      userid, bookname, status, subject,grade,quantity,author,description
+      userid, bookname, status, subject,grade,quantity,author,description,date
     };
     
     if (user) {
@@ -1004,7 +1005,7 @@ router.post("/reqbook/send", fetchuser, async (req, res) => {
         {
           $push: {
             requestedbooks: {
-              bookname, status, subject,grade,quantity,author,description
+              bookname, status, subject,grade,quantity,author,description,date
             
             }
           }
@@ -1220,12 +1221,13 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
     }
 
     const user = User.find({ id: userid });
-
+    const date=new Date();
     const donatedBook = {
       userid,
       quantity,
       contact,
       location,
+      date
     };
     
     if (user) {
@@ -1238,6 +1240,7 @@ router.post("/donatebook/send", fetchuser, async (req, res) => {
               quantity,
               contact,
               location,
+              date
             
             }
           }
